@@ -1,2 +1,3 @@
-ofxOpenCV
+ofxTensorFlow2
+ofxOpenCv
 ofxGui
