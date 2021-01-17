@@ -128,12 +128,12 @@ class ofApp : public ofBaseApp{
                     }
             fbo.end();
 
-            // // get the frame
-            // ofPixels resizedPixels;
-            // fbo.getTexture().readToPixels(resizedPixels);
+            // get the frame
+            ofPixels resizedPixels;
+            fbo.getTexture().readToPixels(resizedPixels);
 
-            // // resize pixels
-            // resizedPixels.resize(nnWidth, nnHeight);
+            // resize pixels
+            resizedPixels.resize(nnWidth, nnHeight);
 
             // // get the frame
             // ofPixels & pixels = videoGrabber.getPixels();
@@ -149,7 +149,7 @@ class ofApp : public ofBaseApp{
                                         {nnWidth, nnHeight, 3});
 
             // cast data type and expand to batch size of 1
-            input = cppflow::cast(input, TF_UINT8, TF_FLOAT);
+            input = cppflow::cast(input, TF_INT32, TF_FLOAT);
             input = cppflow::expand_dims(input, 0);
             input = cppflow::div(input, cppflow::tensor({127.5f}));
             input = cppflow::add(input, cppflow::tensor({-1.0f}));
@@ -168,7 +168,8 @@ class ofApp : public ofBaseApp{
 
             // copy to output frame and postprocessing
             auto outputVector = output.get_data<float>();
-            for(int i=0; i<outputVector.size(); i++) frameProcessed[i] = (outputVector[i] + 1) * 127.5;
+            // for(int i=0; i<outputVector.size(); i++) frameProcessed[i] = (outputVector[i] + 1) * 127.5;
+            for(int i=0; i<outputVector.size(); i++) frameProcessed[i] = ((outputVector[i] * 0.5 )+ 0.5) * 255;
 
             outputTexture.loadData(frameProcessed);
 
@@ -181,21 +182,21 @@ class ofApp : public ofBaseApp{
         ofBackground(100,100,100);
 
         ofSetHexColor(0xffffff);
-        // colorImg.draw(20,20);    // The incoming color image
-        // grayImage.draw(camWidth, camHeight);  // A gray version of the incoming video
+        colorImg.draw(20,20);    // The incoming color image
+        grayImage.draw(camWidth, camHeight);  // A gray version of the incoming video
         // grayBg.draw(camWidth, 0);     // The stored background image
-        // grayDiff.draw(0, camHeight);  // The thresholded difference image
+        grayDiff.draw(0, camHeight);  // The thresholded difference image
 
         outputTexture.draw(camWidth, 0);
         // ofSetHexColor(0xffffff);
         // videoGrabber.draw(20, 20);
         // outputTexture.draw(20 + camWidth, 20, nnWidth, nnHeight);
         
-        // fbo.draw(0,0);
+        fbo.draw(0,0);
 
 
-        // ofSetLineWidth(1);
-        // gui.draw();
+        ofSetLineWidth(1);
+        gui.draw();
         
     }
 
@@ -203,7 +204,6 @@ class ofApp : public ofBaseApp{
     //--------------------------------------------------------------
     void keyPressed(int key){
         bLearnBackground = true;
-        videoGrabber.videoSettings();
     }
 
 
